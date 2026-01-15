@@ -17,7 +17,7 @@ cpan -T JSON
 You should have all the prerequisites to compile pokefirered and do the following
 
 ```shell
-git stash && perl ./Perl-Randomize-Firered/randomize.pl && make9
+git stash && perl ./Perl-Randomize-Firered/randomize.pl && make
 ```
 
 The resulting build will be in `pokefirered.gba`.
