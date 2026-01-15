@@ -323,6 +323,22 @@ sub allow_forget_hm {
     print $fh $file_contents;
 }
 
+sub tm_never_spent {
+    my $file = 'src/party_menu.c';
+    open my $fh, '<', $file;
+    my $file_contents = '';
+    while (my $line = <$fh>) {
+        if ($line =~ /item.*<.*ITEM_HM01/i) {
+            $line = (' ' x 4) . "if (FALSE)\n"
+        }
+        $file_contents .= $line;
+    }
+    close $fh;
+    open $fh, '>', $file;
+    print $fh $file_contents;
+
+}
+
 my $seed = get_seed;
 say 'RANDOM SEED: ' . $seed;
 mix_tms_and_change_rare_candy_price;
@@ -332,3 +348,4 @@ add_items_to_shops;
 mix_level_moves;
 mix_trainers;
 allow_forget_hm;
+tm_never_spent;
