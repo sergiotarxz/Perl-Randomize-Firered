@@ -7,6 +7,7 @@ use warnings;
 use Data::Dumper;
 use JSON   qw/decode_json to_json/;
 use Encode qw/decode encode/;
+use List::Util qw/any/;
 
 sub get_moves {
     state $result;
@@ -68,6 +69,11 @@ sub mix_tms_and_change_rare_candy_price {
         }
         next if $item->{itemId} !~ /^ITEM_TM[0-9]{2}$/;
         my $item_id         = $item->{itemId};
+        for my $move (keys %$unique_non_repeated_moves) {
+            if (any { $move eq $_ } hms()) {
+                delete $unique_non_repeated_moves->{$move};
+            }
+        }
         my @candidate_moves = keys %$unique_non_repeated_moves;
         my $selected_move =
           $candidate_moves[ rand_int( scalar @candidate_moves ) ];
@@ -84,10 +90,14 @@ sub mix_tms_and_change_rare_candy_price {
     modify_tm_move_list( \@moves );
 }
 
+sub hms {
+    return (qw/CUT FLY SURF STRENGTH FLASH ROCK_SMASH WATERFALL DIVE/ );
+}
+
 sub modify_tm_move_list {
     my @moves = @{ $_[0] };
     @moves =
-      ( @moves, qw/CUT FLY SURF STRENGTH FLASH ROCK_SMASH WATERFALL DIVE/ );
+      ( @moves, hms() );
 
     my $file = 'src/data/party_menu.h';
     open my $fh, '<', $file;
@@ -297,6 +307,22 @@ sub mix_trainers {
     print $fh $file_contents;
 }
 
+sub allow_forget_hm {
+    my $file = 'src/pokemon_summary_screen.c';
+    open my $fh, '<', $file;
+    my $file_contents = '';
+    while (my $line = <$fh>) {
+        if ($line =~ /IsMoveHm/) {
+            $line = (' ' x 4) . "if (FALSE)\n"
+
+        }
+        $file_contents .= $line;
+    }
+    close $fh;
+    open $fh, '>', $file;
+    print $fh $file_contents;
+}
+
 my $seed = get_seed;
 say 'RANDOM SEED: ' . $seed;
 mix_tms_and_change_rare_candy_price;
@@ -305,3 +331,4 @@ change_starter;
 add_items_to_shops;
 mix_level_moves;
 mix_trainers;
+allow_forget_hm;
