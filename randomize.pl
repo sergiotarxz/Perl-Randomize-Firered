@@ -339,6 +339,43 @@ sub tm_never_spent {
 
 }
 
+sub get_abilities {
+    my $file = 'include/constants/abilities.h';
+    state %abilities;
+    if (!%abilities) {
+        open my $fh, '<', $file;
+        while (my $line = <$fh>) {
+            my ($ability) = $line =~ /define ABILITY_(.*?)\s/;
+            if (!defined $ability) {
+                next;
+            }
+            if ($ability eq 'NONE') {
+                next;
+            }
+            $abilities{$ability} = 1;
+        }
+    }
+
+    return \%abilities;
+}
+sub mix_abilities {
+    my $file = 'src/data/pokemon/species_info.h';
+    my $file_contents;
+    open my $fh, '<', $file;
+    while (my $line = <$fh>) {
+        if ($line =~ /\.abilities/ && $line !~ /\\/) {
+            my @abilities = keys %{get_abilities()};
+            my $move1 = splice @abilities, rand_int( scalar @abilities ), 1;
+            my $move2 = splice @abilities, rand_int( scalar @abilities ), 1;
+            $line = (' ' x 8) . ".abilities = { ABILITY_$move1, ABILITY_$move2 },\n"
+        }
+        $file_contents.=$line;
+    }
+    close $fh;
+    open $fh, '>', $file;
+    print $fh $file_contents;
+}
+
 my $seed = get_seed;
 say 'RANDOM SEED: ' . $seed;
 mix_tms_and_change_rare_candy_price;
@@ -349,3 +386,4 @@ mix_level_moves;
 mix_trainers;
 allow_forget_hm;
 tm_never_spent;
+mix_abilities;
