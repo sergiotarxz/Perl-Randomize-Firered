@@ -183,6 +183,18 @@ sub randomize_givemons {
     }
     open $fh, '>', $file;
     print $fh $file_contents;
+    my $file = 'data/maps/SaffronCity_Dojo/scripts.inc';
+    open $fh, '<', $file;
+    my $hitmonlee  = splice @species, rand_int( scalar @species ), 1;
+    my $hitmonchan  = splice @species, rand_int( scalar @species ), 1;
+    my $file_contents = '';
+    while (my $line = <$fh>) {
+        $line =~ s/SPECIES_HITMONLEE/SPECIES_$hitmonlee/gm;
+        $line =~ s/SPECIES_HITMONCHAN/SPECIES_$hitmonchan/gm;
+        $file_contents .= $line;
+    }
+    open $fh, '>', $file;
+    print $fh $file_contents;
 }
 
 sub get_seed {
