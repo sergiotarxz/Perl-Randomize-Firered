@@ -450,6 +450,23 @@ sub mix_abilities {
     print $fh $file_contents;
 }
 
+sub obey {
+    my $file = 'src/battle_util.c';
+    my $file_contents = '';
+    open my $fh, '<', $file;
+    while (my $line = <$fh>) {
+        if ($line =~ /SPECIES_DEOXYS/) {
+            $line = (' ' x 4) . "if (TRUE\n"
+        }
+        if ($line =~ /SPECIES_MEW/) {
+            $line = (' ' x 8) . "&& TRUE)\n"
+        }
+        $file_contents .= $line;
+    }
+    open $fh, '>', $file;
+    print $fh $file_contents;
+}
+
 my $seed = get_seed;
 say 'RANDOM SEED: ' . $seed;
 mix_tms_and_change_rare_candy_price;
@@ -463,3 +480,4 @@ tm_never_spent;
 mix_abilities;
 allow_every_evolution;
 randomize_givemons;
+obey;
