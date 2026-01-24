@@ -112,6 +112,20 @@ s/(static const u16 sTMHMMoves\[\] =\s+\{).*?(\})/${1}@{[join ",\n", map { 'MOVE
     print $fh $file_content;
 }
 
+sub allow_every_evolution {
+    my $file = 'src/evolution_scene.c';
+    open my $fh, '<', $file;
+    my $file_contents = '';
+    while (my $line = <$fh>) {
+        if ($line =~ /IsNationalPokedexEnabled/) {
+            $line = (' ' x 4 ) . "if (FALSE";
+        }
+        $file_contents .= $line; 
+    }
+    open $fh, '>', $file;
+    print $fh $file_contents;
+}
+
 sub get_unique_moves_with_description {
     my $moves                     = get_moves;
     my $unique_non_repeated_moves = { map { $_ => 1 } keys %$moves };
@@ -120,6 +134,55 @@ sub get_unique_moves_with_description {
           if !defined $moves->{$move}{description};
     }
     return $unique_non_repeated_moves;
+}
+
+sub randomize_givemons {
+    my $file = 'data/maps/SilphCo_7F/scripts.inc';
+    my $file_contents = '';
+    open my $fh, '<', $file;
+    my %species = %{ get_species() };
+    my @species = keys %species;
+    my $lapras  = splice @species, rand_int( scalar @species ), 1;
+    while (my $line = <$fh>) {
+        $line =~ s/SPECIES_LAPRAS/SPECIES_$lapras/gm;
+        $file_contents .= $line;
+    } 
+    open $fh, '>', $file;
+    print $fh $file_contents;
+    $file = 'data/maps/CeladonCity_Condominiums_RoofRoom/scripts.inc';
+    $file_contents = '';
+    open $fh, '<', $file;
+    my $eevee  = splice @species, rand_int( scalar @species ), 1;
+    while (my $line = <$fh>) {
+        $line =~ s/SPECIES_EEVEE/SPECIES_$eevee/gm;
+        $file_contents .= $line;
+    }
+    open $fh, '>', $file;
+    print $fh $file_contents;
+    $file = 'data/maps/Route4_PokemonCenter_1F/scripts.inc';
+    $file_contents = '';
+    open $fh, '<', $file;
+    my $magikarp  = splice @species, rand_int( scalar @species ), 1;
+    while (my $line = <$fh>) {
+        $line =~ s/SPECIES_MAGIKARP/SPECIES_$magikarp/gm;
+        $file_contents .= $line;
+    }
+    open $fh, '>', $file;
+    print $fh $file_contents;
+    $file = 'data/maps/CinnabarIsland_PokemonLab_ExperimentRoom/scripts.inc';
+    $file_contents = '';
+    open $fh, '<', $file;
+    my $kabuto  = splice @species, rand_int( scalar @species ), 1;
+    my $omanyte  = splice @species, rand_int( scalar @species ), 1;
+    my $aerodactyl  = splice @species, rand_int( scalar @species ), 1;
+    while (my $line = <$fh>) {
+        $line =~ s/SPECIES_KABUTO/SPECIES_$kabuto/gm;
+        $line =~ s/SPECIES_OMANYTE/SPECIES_$omanyte/gm;
+        $line =~ s/SPECIES_AERODACTYL/SPECIES_$aerodactyl/gm;
+        $file_contents .= $line;
+    }
+    open $fh, '>', $file;
+    print $fh $file_contents;
 }
 
 sub get_seed {
@@ -321,6 +384,17 @@ sub allow_forget_hm {
     close $fh;
     open $fh, '>', $file;
     print $fh $file_contents;
+    $file = 'src/battle_script_commands.c';
+    $file_contents = '';
+    open $fh, '<', $file;
+    while (my $line = <$fh>) {
+        if ($line =~ /IsHMMove2/) {
+            $line = (' ' x 16) . "if (FALSE)\n"
+        }
+        $file_contents .= $line;
+    }
+    open $fh, '>', $file;
+    print $fh $file_contents;
 }
 
 sub tm_never_spent {
@@ -387,3 +461,5 @@ mix_trainers;
 allow_forget_hm;
 tm_never_spent;
 mix_abilities;
+allow_every_evolution;
+randomize_givemons;
